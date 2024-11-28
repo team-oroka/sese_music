@@ -9,7 +9,7 @@
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
 <body>
-    <h1>Janomeで形態素解析を実行002</h1>
+    <h1>Janomeで形態素解析を実行</h1>
 
     <!-- テキスト入力エリア -->
     <textarea id="text-input" rows="4" cols="50" placeholder="ここに日本語を入力してください"></textarea>
@@ -20,27 +20,28 @@
 
     <!-- Pythonコード -->
     <py-script>
-    from pyscript import Element
-    import micropip
+        import asyncio
+        from pyscript import Element
+        import micropip
 
-    async def install_and_run():
-        # Janomeをインストール
-        await micropip.install("janome")
+        async def main():
+            # Janomeをインストール
+            await micropip.install("janome")
 
-        from janome.tokenizer import Tokenizer
-        tokenizer = Tokenizer()
+            from janome.tokenizer import Tokenizer
+            tokenizer = Tokenizer()
 
-        # ボタンが押されたときのイベント
-        def analyze_text(event):
-            text = Element("text-input").element.value
-            tokens = [token.surface for token in tokenizer.tokenize(text)]
-            Element("output").write(", ".join(tokens))
+            # ボタンが押されたときのイベント
+            def analyze_text(event):
+                text = Element("text-input").element.value
+                tokens = [token.surface for token in tokenizer.tokenize(text)]
+                Element("output").write(", ".join(tokens))
 
-        # ボタンにイベントをバインド
-        Element("analyze-button").element.onclick = analyze_text
+            # ボタンにイベントをバインド
+            Element("analyze-button").element.onclick = analyze_text
 
-    # 非同期関数を正しく実行
-    await install_and_run()
-</py-script>
+        # asyncioを使って非同期タスクをスケジュール
+        asyncio.ensure_future(main())
+    </py-script>
 </body>
 </html>
