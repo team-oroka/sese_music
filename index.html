@@ -11,12 +11,16 @@
 <body>
     <h1>Janomeで形態素解析を実行</h1>
 
+    <!-- テキスト入力エリア -->
+    <textarea id="text-input" rows="4" cols="50" placeholder="ここに日本語を入力してください"></textarea>
+    <button id="analyze-button">形態素解析を実行</button>
+
     <!-- 結果表示エリア -->
     <div id="output"></div>
 
     <!-- Pythonコード -->
     <py-script>
-        # Janomeの動作を確認する
+        from pyscript import Element
         import micropip
 
         async def install_and_run():
@@ -24,15 +28,16 @@
             await micropip.install("janome")
 
             from janome.tokenizer import Tokenizer
-
-            # 形態素解析の実行
-            text = "今日は天気が良いので散歩をします。"
             tokenizer = Tokenizer()
-            tokens = [token.surface for token in tokenizer.tokenize(text)]
 
-            # HTMLに結果を表示
-            from pyscript import Element
-            Element("output").write(", ".join(tokens))
+            # ボタンが押されたときのイベント
+            def analyze_text(event):
+                text = Element("text-input").element.value
+                tokens = [token.surface for token in tokenizer.tokenize(text)]
+                Element("output").write(", ".join(tokens))
+
+            # ボタンにイベントをバインド
+            Element("analyze-button").element.onclick = analyze_text
 
         # 実行
         install_and_run()
