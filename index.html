@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyScript with Janome</title>
+    <!-- PyScript読み込み -->
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css">
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
+<body>
+    <h1>Janomeで形態素解析を実行</h1>
+
+    <!-- 結果表示エリア -->
+    <div id="output"></div>
+
+    <!-- Pythonコード -->
+    <py-script>
+        # Janomeの動作を確認する
+        import micropip
+
+        async def install_and_run():
+            # Janomeをインストール
+            await micropip.install("janome")
+
+            from janome.tokenizer import Tokenizer
+
+            # 形態素解析の実行
+            text = "今日は天気が良いので散歩をします。"
+            tokenizer = Tokenizer()
+            tokens = [token.surface for token in tokenizer.tokenize(text)]
+
+            # HTMLに結果を表示
+            from pyscript import Element
+            Element("output").write(", ".join(tokens))
+
+        # 実行
+        install_and_run()
+    </py-script>
+</body>
+</html>
