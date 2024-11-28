@@ -1,49 +1,180 @@
-<!DOCTYPE html>
-<html lang="ja">
+<!doctype html>
+<html>
+
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PyScript with Janome</title>
+    <title>じょうり</title>
     <!-- PyScript読み込み -->
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css">
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <style>
+        body {
+            text-align: center;
+            /* テキストを中央揃えにする */
+        }
+        
+        /*なんかよくわからんけどこれいれとくねむい*/
+        #result-area {
+            width: 300px;
+            height: 100px; /* 固定高さ */
+            margin: 0 auto;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            overflow-y: auto; /* スクロール可能にする */
+            white-space: pre-wrap; /* 改行を表示 */
+            background-color: #f9f9f9;
+        }
+
+        #text_area {
+            font-size: 10px;
+            width: 600px;
+            height: 400px;
+            padding: 10px;
+            margin: 0 auto;
+            /* 中央に配置する */
+        }
+
+        #line_count_display,
+        #length_display,
+        #length_display_no_spaces {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .box select {
+            width: 150px;
+            height: 50px;
+            font-size: 20px;
+        }
+
+        #boxbox {
+            border: 4px solid #000000;
+            width: 600px;
+            height: 200px;
+            margin: 0 auto;
+            font-size: 25px;
+        }
+
+        .ryuhe {
+            width: 100px;
+            height: 50px;
+            background-color: #ff8cf0;
+            font-size: 20px;
+        }
+
+        .arimura {
+            border: 4px solid #000000;
+            width: 600px;
+            height: 200px;
+            margin: 0 auto;
+            overflow-y: scroll;
+            font-size: 25px;
+        }
+
+        .wataru {
+            font-size: 90px;
+            line-height: 1px;
+            color: #ff8cf0;
+        }
+    </style>
 </head>
+
+
 <body>
-    <h1>Janomeで形態素解析を実行</h1>
-    <p>結果が出るまで結構時間がかかるっぽいです。</p>
-    <p>（毎回ページを読み込むたびにjanomeをインストールしているため）</p>
+    <h1 class="wataru">せせ塾music</h1>
+    <div class = "box">
+        <select id="song-select">
+            <option value="1">赤とんぼ</option>
+            <option value="2">どんぐりころころ</option>
+            <option value="3">シャボン玉</option>
+            <option value="4">ふるさと</option>
+            <option value="5">桃太郎</option>
+            <option value="6">紅葉</option>
+            <option value="7">仰げば尊し</option>
+            <option value="8">鯉のぼり</option>
+            <option value="9">春が来た</option>
+        </select>
+        <button id="generate-button" class="ryuhe">生成する</button>
+    </div>
 
-    <!-- テキスト入力エリア -->
-    <textarea id="text-input" rows="4" cols="50" placeholder="ここに日本語を入力してください"></textarea>
-    <button id="analyze-button">形態素解析を実行</button>
+    <div>
+        <h1>単語を入力<br>
+            <textarea class = "boxbox" id="word-input" ></textarea>
+    </div>
 
-    <!-- 結果表示エリア -->
-    <div id="output"></div>
+    <div>
+        <h1>生成結果<br>
+            <div id="result-area"></div>
+    </div>
 
-    <!-- Pythonコード -->
     <py-script>
         import asyncio
+        import random
         from pyscript import Element
         import micropip
 
-        async def main():
-            # Janomeをインストール
-            await micropip.install("janome")
+        # 曲データを定義
+        music_list = {
+            '1': "夕焼小焼のあかとんぼ 負われて見たのはいつの日か 山の畑の桑の実を小籠につんだはまぼろしか",
+            '2': "どんぐりころころどんぶりこ おいけにはまってさあたいへん",
+            '3': "シャボンだまとんだ やねまでとんだ やねまでとんで こわれてきえた",
+            '4': "兎追いしかの山 小鮒釣りしかの川 夢は今もめぐりて 忘れがたき故郷",
+            '5': "桃太郎さん桃太郎さん お腰につけた黍団子 一つわたしに下さいな",
+            '6': "秋の夕日に照る山紅葉 濃いも薄いも数ある中に 松をいろどる楓や蔦は山のふもとの裾模様",
+            '7': "あおげばとうとし わが師の恩 教えの庭にも はやいくとせ 思えばいと疾し",
+            '8': "やねよりたかいこいのぼり おおきいまごいはおとうさん ちいさいひごいはこどもたち",
+            '9': "春が来た 春が来た どこに来た 山に来た 里に来たあああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ"
+        }
 
+        # 関連ワードを定義
+        related_words = {
+            "猫": ["かわいい", "ふわふわ", "ゴロゴロ", "にゃんにゃん", "もふもふ"],
+            "犬": ["ワンワン", "お散歩", "忠実", "かわいい", "元気"],
+            "春": ["桜", "新しい", "温かい", "花見", "芽生え"]
+        }
+
+        async def main():
+            await micropip.install("janome")
             from janome.tokenizer import Tokenizer
             tokenizer = Tokenizer()
 
-            # ボタンが押されたときのイベント
-            def analyze_text(event):
-                text = Element("text-input").element.value
-                tokens = [token.surface for token in tokenizer.tokenize(text)]
-                Element("output").write(", ".join(tokens))
+            def create_song(input_text, word, target_pos="名詞"):
+                parsed_words = []
+                related_list = related_words.get(word, ["面白い", "素敵"])
 
-            # ボタンにイベントをバインド
-            Element("analyze-button").element.onclick = analyze_text
+                # 形態素解析
+                for token in tokenizer.tokenize(input_text):
+                    if target_pos in token.part_of_speech:
+                        replacement = random.choice([word] + related_list)
+                        parsed_words.append(replacement)
+                    else:
+                        parsed_words.append(token.surface)
 
-        # asyncioを使って非同期タスクをスケジュール
+                return ''.join(parsed_words)
+
+            def generate_parody(event):
+                # 入力されたデータを取得
+                song_id = Element("song-select").element.value
+                word = Element("word-input").element.value
+
+                # 選択された歌詞と単語を元に替え歌を生成
+                input_text = music_list.get(song_id, "")
+                if not input_text or not word:
+                    Element("result-area").write("入力データが不足しています。")
+                    return
+
+                generated_song = create_song(input_text, word)
+                Element("result-area").write(generated_song)
+
+            # ボタンにクリックイベントをバインド
+            Element("generate-button").element.onclick = generate_parody
+
         asyncio.ensure_future(main())
     </py-script>
 </body>
+</html>
+
 </html>
