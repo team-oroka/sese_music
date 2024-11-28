@@ -20,27 +20,27 @@
 
     <!-- Pythonコード -->
     <py-script>
-        from pyscript import Element
-        import micropip
+    from pyscript import Element
+    import micropip
 
-        async def install_and_run():
-            # Janomeをインストール
-            await micropip.install("janome")
+    async def install_and_run():
+        # Janomeをインストール
+        await micropip.install("janome")
 
-            from janome.tokenizer import Tokenizer
-            tokenizer = Tokenizer()
+        from janome.tokenizer import Tokenizer
+        tokenizer = Tokenizer()
 
-            # ボタンが押されたときのイベント
-            def analyze_text(event):
-                text = Element("text-input").element.value
-                tokens = [token.surface for token in tokenizer.tokenize(text)]
-                Element("output").write(", ".join(tokens))
+        # ボタンが押されたときのイベント
+        def analyze_text(event):
+            text = Element("text-input").element.value
+            tokens = [token.surface for token in tokenizer.tokenize(text)]
+            Element("output").write(", ".join(tokens))
 
-            # ボタンにイベントをバインド
-            Element("analyze-button").element.onclick = analyze_text
+        # ボタンにイベントをバインド
+        Element("analyze-button").element.onclick = analyze_text
 
-        # 実行
-        install_and_run()
-    </py-script>
+    # 非同期関数を正しく実行
+    await install_and_run()
+</py-script>
 </body>
 </html>
